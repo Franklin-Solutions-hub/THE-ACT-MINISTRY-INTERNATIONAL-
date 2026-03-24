@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ACT Ministry International Church">
+  <title>ACT Ministry International | Join Us In Worship</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="/images/church-logo.png" type="image/png">
+  <style> body { opacity: 0; transition: opacity 0.5s ease; } </style>
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+</head>
+<body>
+
+  <!-- ====== NAVBAR ====== -->
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="#home" class="nav-logo">
+        <img src="/images/church-logo.png" alt="ACT Ministry Logo">
+        <div class="nav-logo-text">
+          ACT Ministry
+          <span>Apostolic Core Team Ministry Intl.</span>
+        </div>
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="#home">Home</a>
+        <a href="#events">Events</a>
+        <a href="#about">About</a>
+        <a href="#ministries">Ministries</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#sermons">Sermons</a>
+        <a href="#donate">Give</a>
+        <a href="#contact">Contact</a>
+        <a href="#" class="nav-cta" onclick="window.open('<%= data.settings.watch_live_link || 'https://www.youtube.com' %>', '_blank')">
+          <i class='bx bx-play-circle'></i> Watch Live
+        </a>
+      </div>
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </nav>
+
+  <!-- ====== HERO SECTION ====== -->
+  <section class="hero" id="home">
+    <div class="hero-bg"><img src="/images/worship-flyer.png" alt="Background" fetchpriority="high"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-particles">
+      <% for(let i=0; i<8; i++){ %><div class="hero-particle"></div><% } %>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-badge"><i class='bx bxs-church'></i> Apostolic Core Team Ministry International</div>
+      <h1 class="hero-title"><%- data.settings.hero_title %></h1>
+      <p class="hero-subtitle"><%- data.settings.hero_subtitle %></p>
+      <div class="hero-buttons">
+        <a href="#events" class="btn btn-primary"><i class='bx bx-calendar-event'></i> Join Us</a>
+        <a href="<%= data.settings.watch_live_link || 'https://www.youtube.com' %>" target="_blank" class="btn btn-secondary"><i class='bx bx-play-circle'></i> Watch Live</a>
+      </div>
+    </div>
+    <div class="hero-scroll"><span>Scroll</span><div class="hero-scroll-line"></div></div>
+  </section>
+
+  <!-- ====== EVENT HIGHLIGHT SECTION ====== -->
+  <section class="event-section section" id="events">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-subtitle">Weekly Service</p>
+        <h2 class="section-title">Worship Services & Events</h2>
+        <p class="section-desc">Join us for a powerful time of prayer, worship, and the Word.</p>
+      </div>
+
+      <div class="event-grid">
+        <div class="event-image reveal-left">
+          <img src="/images/worship-flyer.png" alt="Service Flyer" loading="lazy">
+        </div>
+        <div class="event-cards reveal-right">
+          <% data.events.forEach(event => { %>
+          <div class="event-card">
+            <!-- Dynamically check icon type -->
+            <div class="event-card-icon <%= event.icon %>">
+              <i class='bx bx-<%= event.icon === "calendar" ? "calendar-star" : (event.icon === "clock" ? "time-five" : (event.icon === "location" ? "map" : "phone-call")) %>'></i>
+            </div>
+            <h3><%= event.title %></h3>
+            <p><%= event.description %></p>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== ABOUT SECTION ====== -->
+  <section class="about-section section" id="about">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-subtitle">About Us</p>
+        <h2 class="section-title">ACT Ministry International</h2>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-image-wrapper reveal-left">
+          <div class="about-image">
+            <img src="/images/head-pastor.png" alt="Prophet Samuel Eghan Gorman" loading="lazy">
+          </div>
+          <div class="about-image-badge">
+            <h4>Prophet Samuel E. Gorman</h4>
+            <p>Founder</p>
+          </div>
+        </div>
+
+        <div class="about-content reveal-right">
+          <h3>Apostolic Core Team Ministry International</h3>
+          <p><%- data.settings.about_text %></p>
+
+          <div class="about-features">
+            <div class="about-feature"><div class="about-feature-icon">🙏</div><span>Prayer</span></div>
+            <div class="about-feature"><div class="about-feature-icon">🎵</div><span>Worship</span></div>
+            <div class="about-feature"><div class="about-feature-icon">📖</div><span>Word</span></div>
+            <div class="about-feature"><div class="about-feature-icon">⚡</div><span>Power</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== MINISTRIES SECTION ====== -->
+  <section class="ministries-section section" id="ministries">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-subtitle">Our Ministries</p>
+        <h2 class="section-title">Serving Through Purpose</h2>
+      </div>
+
+      <div class="ministries-grid">
+        <% data.ministries.forEach(min => { %>
+        <div class="ministry-card reveal">
+          <div class="ministry-icon"><%= min.icon %></div>
+          <h3><%= min.title %></h3>
+          <p><%= min.description %></p>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== GALLERY SECTION ====== -->
+  <section class="gallery-section section" id="gallery">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-subtitle">Gallery</p>
+        <h2 class="section-title">Moments of Glory</h2>
+      </div>
+
+      <div class="gallery-grid">
+        <% data.gallery.forEach(img => { %>
+        <div class="gallery-item reveal">
+          <% if(img.image_url.match(/\.(mp4|webm|ogg)$/i)) { %>
+            <video src="<%= img.image_url %>" style="width:100%; height:100%; object-fit:cover;" autoplay loop muted playsinline loading="lazy"></video>
+          <% } else { %>
+            <img src="<%= img.image_url %>" alt="<%= img.caption %>" loading="lazy">
+          <% } %>
+          <div class="gallery-overlay">
+            <p><%= img.caption %></p>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== SERMONS SECTION ====== -->
+  <section class="sermons-section section" id="sermons">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-subtitle">Sermons</p>
+        <h2 class="section-title">Watch & Be Blessed</h2>
+      </div>
+
+      <div class="sermons-grid">
+        <% data.sermons.forEach(sermon => { %>
+        <div class="sermon-card reveal">
+          <div class="sermon-video">
+            <% if(sermon.video_url && sermon.video_url.startsWith('/images/')) { %>
+              <!-- Native Video Player for Direct Uploads -->
+              <video src="<%= sermon.video_url %>" controls></video>
+            <% } else if(sermon.video_url) { %>
+              <!-- YouTube Embed -->
+              <iframe src="<%= sermon.video_url %>" allowfullscreen></iframe>
+            <% } else { %>
+              <div class="sermon-placeholder">
+                <div class="sermon-placeholder-icon"><i class='bx bx-play'></i></div>
+                <p>Coming Soon</p>
+              </div>
+            <% } %>
+          </div>
+          <div class="sermon-info">
+            <h3><%= sermon.title %></h3>
+            <p><%= sermon.description %></p>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== DONATE & CONTACT... ====== -->
+  <!-- Donate -->
+  <section class="donation-section section" id="donate">
+    <div class="container">
+      <div class="donation-wrapper reveal">
+        <div class="donation-content">
+          <div class="donation-icon"><i class='bx bx-heart'></i></div>
+          <h2>Support The Ministry</h2>
+          <p>Your generous contributions help us spread the Gospel and support our community initiatives.</p>
+          <div class="donation-amounts" style="margin-bottom: 20px;">
+            <button class="donation-amount active" data-amount="50">GHS 50</button>
+            <button class="donation-amount" data-amount="100">GHS 100</button>
+            <button class="donation-amount" data-amount="200">GHS 200</button>
+            <button class="donation-amount" data-amount="500">GHS 500</button>
+            <button class="donation-amount" data-amount="custom">Custom</button>
+          </div>
+          <div class="form-group custom-amount-container" style="display:none; max-width:300px; margin: 0 auto 20px;">
+            <input type="number" id="customDonationAmount" placeholder="Enter custom amount (GHS)" min="1" style="width:100%; padding: 12px; border: 1px solid var(--gray-light); border-radius: 5px;">
+          </div>
+          <div class="form-group" style="max-width:300px; margin: 0 auto 20px;">
+            <input type="email" id="donationEmail" placeholder="Enter your email address" required style="width:100%; padding: 12px; border: 1px solid var(--gray-light); border-radius: 5px;">
+          </div>
+          <button class="btn" onclick="payWithPaystack()">Give Now <i class='bx bx-heart'></i></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Paystack handling logic
+    const pk = "<%= data.settings.paystack_public_key || '' %>";
+    
+    // Toggle custom amount input
+    const amounts = document.querySelectorAll('.donation-amount');
+    const customContainer = document.querySelector('.custom-amount-container');
+    const customInput = document.getElementById('customDonationAmount');
+
+    amounts.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remove active class from all buttons
+        amounts.forEach(b => b.classList.remove('active'));
+        // Add active class to the clicked button
+        btn.classList.add('active');
+
+        if(btn.dataset.amount === 'custom') {
+          customContainer.style.display = 'block';
+          customInput.focus(); // Focus on the custom input when selected
+        } else {
+          customContainer.style.display = 'none';
+        }
+      });
+    });
+
+    function payWithPaystack() {
+      if(!pk) {
+        alert('Payment system is not configured yet. Please try again later.');
+        return;
+      }
+      
+      const email = document.getElementById('donationEmail').value;
+      if(!email) {
+        alert('Please enter your email address to proceed.');
+        return;
+      }
+
+      let activeBtn = document.querySelector('.donation-amount.active');
+      let amountGHS = activeBtn ? activeBtn.dataset.amount : 0;
+      
+      if(amountGHS === 'custom') {
+        amountGHS = customInput.value;
+      }
+      
+      if(!amountGHS || parseFloat(amountGHS) <= 0) { // Use parseFloat for comparison
+        alert('Please select or enter a valid amount.');
+        return;
+      }
+
+      const handler = PaystackPop.setup({
+        key: pk, // Replace with your public key
+        email: email,
+        amount: parseFloat(amountGHS) * 100, // amount is in pesewas
+        currency: 'GHS',
+        ref: 'ACT_' + Math.floor((Math.random() * 1000000000) + 1), // generates a pseudo-unique reference
+        callback: function(response) {
+          // You could optionally send the response.reference to your backend for verification
+          alert('Payment complete! Reference: ' + response.reference + '. Thank you for your support!');
+        },
+        onClose: function() {
+          console.log('Payment window closed.');
+        }
+      });
+      handler.openIframe();
+    }
+  </script>
+
+  <!-- ====== CONTACT SECTION ====== -->
+  <section class="contact-section section" id="contact">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-subtitle">Get In Touch</p>
+        <h2 class="section-title">Contact Us</h2>
+      </div>
+
+      <div class="contact-grid">
+        <div class="reveal-left">
+          <div class="contact-info">
+            <div class="contact-info-card">
+              <div class="contact-info-icon loc"><i class='bx bx-map'></i></div>
+              <div class="contact-info-text">
+                <h4>Our Location</h4>
+                <p><%= data.settings.contact_address %></p>
+              </div>
+            </div>
+
+            <div class="contact-info-card">
+              <div class="contact-info-icon phn"><i class='bx bx-phone'></i></div>
+              <div class="contact-info-text">
+                <h4>Phone Numbers</h4>
+                <p>
+                  <a href="tel:<%= data.settings.contact_phone1 %>"><%= data.settings.contact_phone1 %></a><br>
+                  <a href="tel:<%= data.settings.contact_phone2 %>"><%= data.settings.contact_phone2 %></a><br>
+                  <a href="tel:<%= data.settings.contact_phone3 %>"><%= data.settings.contact_phone3 %></a>
+                </p>
+              </div>
+            </div>
+
+            <div class="contact-info-card">
+              <div class="contact-info-icon eml"><i class='bx bx-envelope'></i></div>
+              <div class="contact-info-text">
+                <h4>Email Us</h4>
+                <p><a href="mailto:<%= data.settings.contact_email %>"><%= data.settings.contact_email %></a></p>
+              </div>
+            </div>
+          </div>
+          <div class="contact-map">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3970.6!2d-0.27!3d5.56!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sDansoman%2C+Accra!5e0!3m2!1sen!2sgh!4v1678901234567" allowfullscreen="" loading="lazy"></iframe>
+          </div>
+        </div>
+
+        <div class="contact-form-wrapper reveal-right">
+          <h3>Send Us a Message</h3>
+          <form id="contactForm">
+            <div class="form-group"><input type="text" name="name" placeholder="Your Name" required></div>
+            <div class="form-group"><input type="email" name="email" placeholder="Email Address" required></div>
+            <div class="form-group"><textarea name="message" placeholder="Message..." required></textarea></div>
+            <button type="submit" class="form-submit"><i class='bx bx-send'></i> Send Message</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer" id="footer">
+    <div class="footer-main">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="footer-logo">
+              <img src="/images/church-logo.png" alt="Logo">
+              <div class="footer-logo-text">ACT Ministry<span>Apostolic Core Team</span></div>
+            </div>
+            <p class="footer-tagline">"Come and Experience the overflow of God's Power"</p>
+          </div>
+          <div class="footer-col">
+            <h4>Quick Links</h4>
+            <ul><li><a href="#home">Home</a></li><li><a href="#about">About</a></li></ul>
+          </div>
+          <div class="footer-col">
+            <h4>Contact</h4>
+            <ul>
+              <li><a href="#"><%= data.settings.contact_phone1 %></a></li>
+              <li><a href="#"><%= data.settings.contact_email %></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <p>&copy; 2025 ACT Ministry International Church. All rights reserved.</p>
+        <p>Designed with <span style="color: var(--magenta);">❤</span> for the Glory of God | Website Design by Franklin Tech Hub Solutions</p>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/<%= data.settings.contact_phone1.replace(/\s+/g, '') %>" target="_blank" class="whatsapp-float"><i class='bx bxl-whatsapp'></i></a>
+  <script src="/js/script.js"></script>
+</body>
+</html>

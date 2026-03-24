@@ -1,0 +1,3 @@
+@echo off
+echo Opening ACT Ministry Website...
+start http://localhost:8080

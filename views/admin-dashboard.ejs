@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | ACT Ministry</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <style>
+    body { background: var(--off-white); }
+    .admin-nav {
+      background: var(--deep-blue);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--white);
+    }
+    .admin-nav h2 { font-family: var(--font-heading); color: var(--gold); }
+    .btn-logout { background: var(--magenta); color: var(--white); padding: 8px 16px; border-radius: 5px; font-weight: bold; }
+    
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: calc(100vh - 70px);
+    }
+    
+    .sidebar {
+      background: var(--white);
+      padding: 20px;
+      border-right: 1px solid var(--gray-light);
+    }
+    .sidebar ul { list-style: none; padding: 0; }
+    .sidebar li { margin-bottom: 10px; }
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      color: var(--text-dark);
+      border-radius: var(--radius-sm);
+      font-weight: 500;
+      transition: var(--transition);
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background: var(--gold);
+      color: var(--deep-blue);
+    }
+    
+    .content { padding: 40px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    .card {
+      background: var(--white);
+      padding: 30px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 30px;
+    }
+    .card h3 { margin-bottom: 20px; color: var(--deep-blue); font-family: var(--font-heading); font-size: 1.5rem; }
+    
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
+    .form-group input, .form-group textarea {
+      width: 100%; padding: 12px; border: 1px solid var(--gray-light); border-radius: 5px; font-family: var(--font-body);
+    }
+    .form-group textarea { min-height: 100px; resize: vertical; }
+    .btn-save {
+      background: var(--deep-blue); color: var(--white); padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;
+    }
+    
+    .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .data-table th, .data-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--gray-light); }
+    .data-table th { background: var(--off-white); font-weight: 600; }
+    .btn-delete { background: var(--magenta); color: var(--white); padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+    
+    .gallery-grid-admin { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
+    .gallery-item-admin { position: relative; border-radius: 8px; overflow: hidden; height: 150px; }
+    .gallery-item-admin img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery-item-admin .btn-delete { position: absolute; top: 5px; right: 5px; padding: 4px 8px; }
+    
+    .alert { padding: 15px; background: #d4edda; color: #155724; border-radius: 5px; margin-bottom: 20px; border: 1px solid #c3e6cb; }
+    
+    .drag-drop-zone {
+      border: 2px dashed var(--gold); border-radius: var(--radius-md); padding: 40px;
+      text-align: center; background: #fafafa; cursor: pointer; transition: all 0.3s; margin-bottom: 15px;
+    }
+    .drag-drop-zone.dragover { background: #eef2ff; border-color: var(--deep-blue); }
+    .drag-drop-zone i { font-size: 3rem; color: var(--gold); }
+    .drag-drop-zone p { margin-top: 10px; font-family: var(--font-body); color: var(--text-dark); }
+
+  </style>
+</head>
+<body>
+
+  <nav class="admin-nav">
+    <h2>ACT Dashboard</h2>
+    <a href="/admin/logout" class="btn-logout">Logout</a>
+  </nav>
+
+  <div class="dashboard-container">
+    <aside class="sidebar">
+      <ul>
+        <li><a href="#" class="tab-btn active" data-target="settings"><i class='bx bx-cog'></i> General Settings</a></li>
+        <li><a href="#" class="tab-btn" data-target="events"><i class='bx bx-calendar'></i> Events</a></li>
+        <li><a href="#" class="tab-btn" data-target="ministries"><i class='bx bxs-church'></i> Ministries</a></li>
+        <li><a href="#" class="tab-btn" data-target="gallery"><i class='bx bx-image'></i> Media Hub</a></li>
+        <li><a href="#" class="tab-btn" data-target="sermons"><i class='bx bx-video'></i> Sermons</a></li>
+        <li><a href="#" class="tab-btn" data-target="messages"><i class='bx bx-envelope'></i> Messages</a></li>
+        <li><a href="/" target="_blank" style="margin-top: 20px; border: 1px solid var(--deep-blue);"><i class='bx bx-link-external'></i> View Site</a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
+      <% if (msg) { %>
+        <div class="alert"><%= msg %></div>
+      <% } %>
+
+      <!-- SETTINGS TAB -->
+      <section id="settings" class="tab-content active">
+        <div class="card">
+          <h3>General Settings & Text</h3>
+          <form action="/admin/settings" method="POST">
+            <div class="form-group">
+              <label>Hero Title</label>
+              <input type="text" name="hero_title" value="<%= data.settings.hero_title %>">
+              <small style="color: grey;">Use &lt;span&gt;Worship&lt;/span&gt; for the gold text effect.</small>
+            </div>
+            <div class="form-group">
+              <label>Hero Subtitle</label>
+              <input type="text" name="hero_subtitle" value="<%= data.settings.hero_subtitle %>">
+            </div>
+            <div class="form-group">
+              <label>Watch Live Link (YouTube, Facebook, etc.)</label>
+              <input type="url" name="watch_live_link" value="<%= data.settings.watch_live_link || 'https://www.youtube.com' %>" placeholder="https://www.youtube.com">
+            </div>
+            <div class="form-group">
+              <label>About Us Text (HTML allowed)</label>
+              <textarea name="about_text"><%= data.settings.about_text %></textarea>
+            </div>
+            <div class="form-group">
+              <label>Contact Address</label>
+              <input type="text" name="contact_address" value="<%= data.settings.contact_address %>">
+            </div>
+            <div class="form-group">
+              <label>Phone Number 1 (WhatsApp)</label>
+              <input type="text" name="contact_phone1" value="<%= data.settings.contact_phone1 %>">
+            </div>
+            <div class="form-group">
+              <label>Main Email</label>
+              <input type="email" name="contact_email" value="<%= data.settings.contact_email %>">
+            </div>
+            <div class="form-group">
+              <label>Paystack Public Key (For Donations)</label>
+              <input type="text" name="paystack_public_key" value="<%= data.settings.paystack_public_key || '' %>" placeholder="pk_test_...">
+              <small style="color: grey;">Leave blank to disable donations.</small>
+            </div>
+            <button type="submit" class="btn-save">Save Settings</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- EVENTS TAB -->
+      <section id="events" class="tab-content">
+        <div class="card">
+          <h3>Add New Event Card</h3>
+          <form action="/admin/events" method="POST">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+              <div class="form-group">
+                <label>Title</label>
+                <input type="text" name="title" required>
+              </div>
+              <div class="form-group">
+                <label>Icon Style (calendar, clock, location, phone)</label>
+                <input type="text" name="icon" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea name="description" rows="2" required></textarea>
+            </div>
+            <button type="submit" class="btn-save">Add Event</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Current Events cards</h3>
+          <table class="data-table">
+            <tr>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Icon</th>
+              <th>Action</th>
+            </tr>
+            <% data.events.forEach(event => { %>
+            <tr>
+              <td><strong><%= event.title %></strong></td>
+              <td><%= event.description %></td>
+              <td><%= event.icon %></td>
+              <td>
+                <button class="btn-save" style="padding: 6px 12px; font-size: 0.8rem; margin-right: 5px;" onclick="document.getElementById('edit-event-<%= event.id %>').style.display='table-row'">Edit</button>
+                <form action="/admin/events/delete/<%= event.id %>" method="POST" style="display:inline;">
+                  <button type="submit" class="btn-delete" onclick="return confirm('Are you sure?')">Delete</button>
+                </form>
+              </td>
+            </tr>
+            <!-- Hidden Edit Row for Event -->
+            <tr id="edit-event-<%= event.id %>" style="display:none; background: #f9f9f9;">
+              <td colspan="4">
+                <form action="/admin/events/edit/<%= event.id %>" method="POST" style="display:flex; gap: 10px; align-items:center;">
+                  <input type="text" name="title" value="<%= event.title %>" style="padding:5px; flex:1;" required>
+                  <input type="text" name="description" value="<%= event.description %>" style="padding:5px; flex:2;" required>
+                  <input type="text" name="icon" value="<%= event.icon %>" style="padding:5px; width:100px;" required>
+                  <input type="hidden" name="time" value="<%= event.time %>">
+                  <input type="hidden" name="location" value="<%= event.location %>">
+                  <button type="submit" class="btn-save" style="padding: 6px 12px; font-size: 0.8rem;">Save</button>
+                  <button type="button" class="btn-delete" style="padding: 6px 12px; font-size: 0.8rem;" onclick="document.getElementById('edit-event-<%= event.id %>').style.display='none'">Cancel</button>
+                </form>
+              </td>
+            </tr>
+            <% }) %>
+          </table>
+        </div>
+      </section>
+
+      <!-- MINISTRIES TAB -->
+      <section id="ministries" class="tab-content">
+        <div class="card">
+          <h3>Add Ministry</h3>
+          <form action="/admin/ministries" method="POST">
+            <div class="form-group">
+              <label>Title</label>
+              <input type="text" name="title" required>
+            </div>
+            <div class="form-group">
+              <label>Emoji/Icon (e.g. 🙏, 🎶)</label>
+              <input type="text" name="icon" required>
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea name="description" rows="2" required></textarea>
+            </div>
+            <button type="submit" class="btn-save">Add Ministry</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Current Ministries</h3>
+          <table class="data-table">
+            <tr>
+              <th>Icon</th>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Action</th>
+            </tr>
+            <% data.ministries.forEach(min => { %>
+            <tr>
+              <td><span style="font-size: 1.5rem;"><%= min.icon %></span></td>
+              <td><strong><%= min.title %></strong></td>
+              <td><%= min.description %></td>
+              <td>
+                <button class="btn-save" style="padding: 6px 12px; font-size: 0.8rem; margin-right: 5px;" onclick="document.getElementById('edit-min-<%= min.id %>').style.display='table-row'">Edit</button>
+                <form action="/admin/ministries/delete/<%= min.id %>" method="POST" style="display:inline;">
+                  <button type="submit" class="btn-delete" onclick="return confirm('Are you sure?')">Delete</button>
+                </form>
+              </td>
+            </tr>
+            <!-- Hidden Edit Row for Ministry -->
+            <tr id="edit-min-<%= min.id %>" style="display:none; background: #f9f9f9;">
+              <td colspan="4">
+                <form action="/admin/ministries/edit/<%= min.id %>" method="POST" style="display:flex; gap: 10px; align-items:center;">
+                  <input type="text" name="title" value="<%= min.title %>" style="padding:5px; flex:1;" required>
+                  <input type="text" name="description" value="<%= min.description %>" style="padding:5px; flex:2;" required>
+                  <input type="text" name="icon" value="<%= min.icon %>" style="padding:5px; width:80px;" required>
+                  <button type="submit" class="btn-save" style="padding: 6px 12px; font-size: 0.8rem;">Save</button>
+                  <button type="button" class="btn-delete" style="padding: 6px 12px; font-size: 0.8rem;" onclick="document.getElementById('edit-min-<%= min.id %>').style.display='none'">Cancel</button>
+                </form>
+              </td>
+            </tr>
+            <% }) %>
+          </table>
+        </div>
+      </section>
+
+      <!-- MEDIA GALLERY TAB (Drag & Drop) -->
+      <section id="gallery" class="tab-content">
+        <div class="card">
+          <h3>Upload Media (Images & Videos)</h3>
+          <form action="/admin/gallery" method="POST" enctype="multipart/form-data">
+            <div class="drag-drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+              <i class='bx bx-cloud-upload'></i>
+              <p>Drag & Drop Images/Videos here or click to browse</p>
+              <input type="file" name="image" id="fileInput" accept="image/*,video/*" style="display: none;" required>
+            </div>
+            <div id="filePreview" style="margin-bottom:15px; font-weight:bold; color:var(--deep-blue);"></div>
+            <div class="form-group">
+              <label>Caption text (shows on hover)</label>
+              <input type="text" name="caption" required>
+            </div>
+            <button type="submit" class="btn-save">Upload Media</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Current Media Files</h3>
+          <div class="gallery-grid-admin">
+            <% data.gallery.forEach(img => { %>
+              <div class="gallery-item-admin">
+                <% if(img.image_url.match(/\.(mp4|webm|ogg)$/i)) { %>
+                  <video src="<%= img.image_url %>" style="width:100%; height:100%; object-fit:cover;" muted></video>
+                <% } else { %>
+                  <img src="<%= img.image_url %>" alt="<%= img.caption %>">
+                <% } %>
+                <form action="/admin/gallery/delete/<%= img.id %>" method="POST">
+                  <button type="submit" class="btn-delete" onclick="return confirm('Delete this media?')"><i class='bx bx-trash'></i></button>
+                </form>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+      </section>
+
+      <!-- SERMONS TAB -->
+      <section id="sermons" class="tab-content">
+        <div class="card">
+          <h3>Add Sermon</h3>
+          <form action="/admin/sermons" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+              <label>Sermon Title</label>
+              <input type="text" name="title" required>
+            </div>
+            
+            <div class="form-group">
+              <label>Direct Video Upload (Drag & Drop .mp4, .webm)</label>
+              <div class="drag-drop-zone" id="sermonDropZone" onclick="document.getElementById('sermonFileInput').click()">
+                <i class='bx bx-cloud-upload'></i>
+                <p>Drag & Drop a video file here or click to browse</p>
+                <input type="file" name="sermon_video" id="sermonFileInput" accept="video/*" style="display: none;">
+              </div>
+              <div id="sermonFilePreview" style="margin-top:10px; font-weight:bold; color:var(--deep-blue);"></div>
+            </div>
+
+            <div style="text-align: center; margin: 10px 0; font-weight: bold; color: var(--gray);">— OR —</div>
+
+            <div class="form-group">
+              <label>YouTube Video Embed URL</label>
+              <input type="text" name="video_url" placeholder="e.g. https://www.youtube.com/embed/...">
+              <small style="color: grey;">If you upload a file above, this link will be ignored.</small>
+            </div>
+            
+            <div class="form-group">
+              <label>Description</label>
+              <textarea name="description" rows="2" required></textarea>
+            </div>
+            <button type="submit" class="btn-save">Add Sermon</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Current Sermons</h3>
+          <table class="data-table">
+            <tr>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Video Source</th>
+              <th>Action</th>
+            </tr>
+            <% data.sermons.forEach(sermon => { %>
+            <tr>
+              <td><strong><%= sermon.title %></strong></td>
+              <td><%= sermon.description %></td>
+              <td>
+                <% if(sermon.video_url && sermon.video_url.startsWith('/images/')) { %>
+                  <span style="color: green;"><i class='bx bx-check-circle'></i> Uploaded Video</span>
+                <% } else if(sermon.video_url) { %>
+                  <a href="<%= sermon.video_url %>" target="_blank">YouTube Link</a>
+                <% } else { %>
+                  <em>None</em>
+                <% } %>
+              </td>
+              <td>
+                <button class="btn-save" style="padding: 6px 12px; font-size: 0.8rem; margin-right: 5px;" onclick="document.getElementById('edit-sermon-<%= sermon.id %>').style.display='table-row'">Edit</button>
+                <form action="/admin/sermons/delete/<%= sermon.id %>" method="POST" style="display:inline;">
+                  <button type="submit" class="btn-delete" onclick="return confirm('Are you sure?')">Delete</button>
+                </form>
+              </td>
+            </tr>
+            <!-- Hidden Edit Row -->
+            <tr id="edit-sermon-<%= sermon.id %>" style="display:none; background: #f9f9f9;">
+              <td colspan="4">
+                <form action="/admin/sermons/edit/<%= sermon.id %>" method="POST" style="display:flex; gap: 10px; align-items:center;">
+                  <input type="text" name="title" value="<%= sermon.title %>" style="padding:5px; flex:1;" required>
+                  <input type="text" name="description" value="<%= sermon.description %>" style="padding:5px; flex:2;" required>
+                  <input type="text" name="video_url" value="<%= sermon.video_url %>" style="padding:5px; flex:1;" placeholder="YouTube Link">
+                  <button type="submit" class="btn-save" style="padding: 6px 12px; font-size: 0.8rem;">Save</button>
+                  <button type="button" class="btn-delete" style="padding: 6px 12px; font-size: 0.8rem;" onclick="document.getElementById('edit-sermon-<%= sermon.id %>').style.display='none'">Cancel</button>
+                </form>
+              </td>
+            </tr>
+            <% }) %>
+          </table>
+        </div>
+      </section>
+
+      <!-- MESSAGES TAB -->
+      <section id="messages" class="tab-content">
+        <div class="card">
+          <h3>Contact Form Messages</h3>
+          <% if(data.messages && data.messages.length > 0) { %>
+            <table class="data-table">
+              <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Message</th>
+                <th>Action</th>
+              </tr>
+              <% data.messages.forEach(msg => { %>
+              <tr>
+                <td><%= new Date(msg.created_at).toLocaleDateString() %></td>
+                <td><strong><%= msg.name %></strong></td>
+                <td><a href="mailto:<%= msg.email %>"><%= msg.email %></a></td>
+                <td><%= msg.message %></td>
+                <td>
+                  <form action="/admin/messages/delete/<%= msg.id %>" method="POST" style="display:inline;">
+                    <button type="submit" class="btn-delete" onclick="return confirm('Delete message?')">Delete</button>
+                  </form>
+                </td>
+              </tr>
+              <% }) %>
+            </table>
+          <% } else { %>
+            <p>No messages yet.</p>
+          <% } %>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // Simple tab switching logic for the admin dashboard
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        // Remove active class from all
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        
+        // Add active class to clicked
+        tab.classList.add('active');
+        const target = tab.getAttribute('data-target');
+        document.getElementById(target).classList.add('active');
+      });
+    });
+
+    // Fade out alerts
+    setTimeout(() => {
+      const alert = document.querySelector('.alert');
+      if(alert) {
+        alert.style.opacity = '0';
+        setTimeout(() => alert.style.display = 'none', 500);
+      }
+    }, 3000);
+
+    // Drag and Drop Logic
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+
+    if(dropZone) {
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+      });
+      function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+      });
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+      });
+
+      dropZone.addEventListener('drop', handleDrop, false);
+      function handleDrop(e) {
+        let dt = e.dataTransfer;
+        let files = dt.files;
+        if(files.length > 0) {
+          fileInput.files = files; 
+          filePreview.textContent = 'Selected file: ' + files[0].name;
+        }
+      }
+
+      fileInput.addEventListener('change', function() {
+        if(this.files.length > 0) {
+          filePreview.textContent = 'Selected file: ' + this.files[0].name;
+        }
+      });
+    }
+
+    // Sermon Drag and Drop Logic
+    const sermonDropZone = document.getElementById('sermonDropZone');
+    const sermonFileInput = document.getElementById('sermonFileInput');
+    const sermonFilePreview = document.getElementById('sermonFilePreview');
+
+    if(sermonDropZone) {
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        sermonDropZone.addEventListener(eventName, preventDefaults, false);
+      });
+      function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        sermonDropZone.addEventListener(eventName, () => sermonDropZone.classList.add('dragover'), false);
+      });
+      ['dragleave', 'drop'].forEach(eventName => {
+        sermonDropZone.addEventListener(eventName, () => sermonDropZone.classList.remove('dragover'), false);
+      });
+
+      sermonDropZone.addEventListener('drop', handleDrop, false);
+      function handleDrop(e) {
+        let dt = e.dataTransfer;
+        let files = dt.files;
+        if(files.length > 0) {
+          sermonFileInput.files = files; 
+          sermonFilePreview.textContent = 'Selected file: ' + files[0].name;
+        }
+      }
+
+      sermonFileInput.addEventListener('change', function() {
+        if(this.files.length > 0) {
+          sermonFilePreview.textContent = 'Selected file: ' + this.files[0].name;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

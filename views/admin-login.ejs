@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | ACT Ministry International</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body {
+      background: var(--deep-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .login-container {
+      background: var(--white);
+      padding: 40px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .login-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+    }
+    .login-container h2 {
+      font-family: var(--font-heading);
+      color: var(--deep-blue);
+      margin-bottom: 24px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid var(--gray-light);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+    }
+    .form-group input:focus {
+      border-color: var(--gold);
+      outline: none;
+    }
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: var(--deep-blue);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: var(--transition);
+    }
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-gold);
+    }
+    .error-msg {
+      color: var(--magenta);
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <img src="/images/church-logo.png" alt="Logo" class="login-logo">
+    <h2>Admin Login</h2>
+    
+    <% if (error) { %>
+      <div class="error-msg"><%= error %></div>
+    <% } %>
+
+    <form action="/admin/login" method="POST">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" required>
+      </div>
+      <button type="submit" class="btn-login">Login</button>
+    </form>
+    <p style="margin-top: 20px; font-size: 0.8rem; color: var(--gray);">Return to <a href="/" style="color: var(--gold);">Homepage</a></p>
+  </div>
+
+</body>
+</html>

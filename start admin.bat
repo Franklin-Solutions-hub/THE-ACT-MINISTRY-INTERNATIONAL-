@@ -1,0 +1,3 @@
+@echo off
+echo Opening ACT Ministry Admin Dashboard...
+start http://localhost:8080/admin
