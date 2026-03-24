@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Meet the dedicated leaders of ACT Ministry International Church — Apostolic Core Team Ministry International.">
+  <title>Church Leadership | ACT Ministry International</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="/images/church-logo.png" type="image/png">
+  <style> body { opacity: 0; transition: opacity 0.5s ease; } </style>
+</head>
+<body>
+
+  <!-- ====== NAVBAR ====== -->
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="/" class="nav-logo">
+        <img src="/images/church-logo.png" alt="ACT Ministry Logo">
+        <div class="nav-logo-text">
+          ACT Ministry
+          <span>Apostolic Core Team Ministry Intl.</span>
+        </div>
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="/">Home</a>
+        <a href="/#events">Events</a>
+        <a href="/#about">About</a>
+        <a href="/leadership" class="active-link">Leadership</a>
+        <a href="/#ministries">Ministries</a>
+        <a href="/#gallery">Gallery</a>
+        <a href="/#sermons">Sermons</a>
+        <a href="/#donate">Give</a>
+        <a href="/#contact">Contact</a>
+        <a href="<%= data.settings.watch_live_link || 'https://www.youtube.com' %>" target="_blank" rel="noopener" class="nav-cta">
+          <i class='bx bx-play-circle'></i> Watch Live
+        </a>
+      </div>
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </nav>
+
+  <!-- ====== LEADERSHIP HERO ====== -->
+  <section class="leadership-hero">
+    <div class="leadership-hero-bg">
+      <img src="/images/worship-flyer.png" alt="Background">
+    </div>
+    <div class="leadership-hero-overlay"></div>
+    <div class="leadership-hero-particles">
+      <% for(let i=0; i<6; i++){ %><div class="hero-particle"></div><% } %>
+    </div>
+    <div class="leadership-hero-content">
+      <div class="hero-badge">
+        <i class='bx bx-group'></i> Our Leaders
+      </div>
+      <h1 class="hero-title">Church <span>Leadership</span></h1>
+      <p class="hero-subtitle">Meet the Servants Leading ACT Ministry International Church</p>
+      <div class="hero-buttons">
+        <a href="#leaders-grid" class="btn btn-primary"><i class='bx bx-chevron-down'></i> Meet Our Team</a>
+        <a href="/#contact" class="btn btn-secondary"><i class='bx bx-envelope'></i> Contact Us</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== FEATURED LEADER SECTION ====== -->
+  <% const featuredLeaders = data.leaders.filter(l => l.is_featured); %>
+  <% if(featuredLeaders.length > 0) { %>
+  <section class="featured-leader-section section">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-subtitle">Our Shepherd</p>
+        <h2 class="section-title">Meet Our Founder</h2>
+      </div>
+
+      <% featuredLeaders.forEach(leader => { %>
+      <% const socials = typeof leader.social_links === 'string' ? JSON.parse(leader.social_links) : (leader.social_links || {}); %>
+      <div class="featured-leader-card reveal">
+        <div class="featured-leader-image">
+          <% if(leader.image_url) { %>
+            <img src="<%= leader.image_url %>" alt="<%= leader.name %>">
+          <% } else { %>
+            <div class="featured-leader-placeholder"><i class='bx bx-user'></i></div>
+          <% } %>
+        </div>
+        <div class="featured-leader-info">
+          <div class="featured-leader-badge"><%= leader.position %></div>
+          <h3><%= leader.name %></h3>
+          <p class="featured-leader-bio"><%- leader.full_bio || leader.short_bio %></p>
+          <div class="featured-leader-socials">
+            <% if(socials.whatsapp) { %>
+              <a href="https://wa.me/<%= socials.whatsapp.replace(/\s+/g, '') %>" target="_blank" rel="noopener" class="social-link whatsapp">
+                <i class='bx bxl-whatsapp'></i> WhatsApp
+              </a>
+            <% } %>
+            <% if(socials.facebook) { %>
+              <a href="<%= socials.facebook %>" target="_blank" rel="noopener" class="social-link facebook">
+                <i class='bx bxl-facebook'></i> Facebook
+              </a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- ====== LEADERSHIP GRID SECTION ====== -->
+  <section class="leaders-section section" id="leaders-grid">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-subtitle">Leadership Team</p>
+        <h2 class="section-title">Servants of God</h2>
+        <p class="section-desc">Dedicated leaders committed to shepherding, teaching, and building the body of Christ.</p>
+      </div>
+
+      <% if(data.leaders.length > 0) { %>
+      <div class="leaders-grid">
+        <% data.leaders.forEach(leader => { %>
+        <% const socials = typeof leader.social_links === 'string' ? JSON.parse(leader.social_links) : (leader.social_links || {}); %>
+        <div class="leader-card reveal">
+          <div class="leader-card-image">
+            <% if(leader.image_url) { %>
+              <img src="<%= leader.image_url %>" alt="<%= leader.name %>">
+            <% } else { %>
+              <div class="leader-card-placeholder"><i class='bx bx-user'></i></div>
+            <% } %>
+            <div class="leader-card-overlay">
+              <div class="leader-card-socials">
+                <% if(socials.whatsapp) { %>
+                  <a href="https://wa.me/<%= socials.whatsapp.replace(/\s+/g, '') %>" target="_blank" rel="noopener"><i class='bx bxl-whatsapp'></i></a>
+                <% } %>
+                <% if(socials.facebook) { %>
+                  <a href="<%= socials.facebook %>" target="_blank" rel="noopener"><i class='bx bxl-facebook'></i></a>
+                <% } %>
+              </div>
+            </div>
+          </div>
+          <div class="leader-card-info">
+            <h3><%= leader.name %></h3>
+            <span class="leader-card-position"><%= leader.position %></span>
+            <p><%= leader.short_bio %></p>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+      <% } else { %>
+      <div class="leadership-empty">
+        <i class='bx bx-group'></i>
+        <p>Leadership profiles coming soon!</p>
+      </div>
+      <% } %>
+    </div>
+  </section>
+
+  <!-- ====== CTA SECTION ====== -->
+  <section class="leadership-cta-section">
+    <div class="container">
+      <div class="leadership-cta reveal">
+        <div class="leadership-cta-icon"><i class='bx bx-heart'></i></div>
+        <h2>Become Part of Our Family</h2>
+        <p>We warmly invite you to join our community and grow together in faith, love, and purpose.</p>
+        <div class="leadership-cta-buttons">
+          <a href="/#contact" class="btn btn-primary"><i class='bx bx-envelope'></i> Get In Touch</a>
+          <a href="/#events" class="btn btn-secondary-dark"><i class='bx bx-calendar-event'></i> Join Us This Friday</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer" id="footer">
+    <div class="footer-main">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <div class="footer-logo">
+              <img src="/images/church-logo.png" alt="Logo">
+              <div class="footer-logo-text">ACT Ministry<span>Apostolic Core Team</span></div>
+            </div>
+            <p class="footer-tagline">"Come and Experience the overflow of God's Power"</p>
+          </div>
+          <div class="footer-col">
+            <h4>Quick Links</h4>
+            <ul><li><a href="/">Home</a></li><li><a href="/#about">About</a></li><li><a href="/leadership">Leadership</a></li></ul>
+          </div>
+          <div class="footer-col">
+            <h4>Contact</h4>
+            <ul>
+              <li><a href="tel:<%= data.settings.contact_phone1 %>"><%= data.settings.contact_phone1 %></a></li>
+              <li><a href="mailto:<%= data.settings.contact_email %>"><%= data.settings.contact_email %></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <p>&copy; 2025 ACT Ministry International Church. All rights reserved.</p>
+        <p>Designed with <span style="color: var(--magenta);">❤</span> for the Glory of God | Website Design by Franklin Tech Hub Solutions</p>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/<%= data.settings.contact_phone1.replace(/\s+/g, '') %>" target="_blank" class="whatsapp-float"><i class='bx bxl-whatsapp'></i></a>
+  <script src="/js/script.js"></script>
+</body>
+</html>

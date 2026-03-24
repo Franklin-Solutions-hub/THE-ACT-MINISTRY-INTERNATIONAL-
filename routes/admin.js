@@ -65,6 +65,9 @@ module.exports = function(upload) {
       const { data: messages } = await supabase.from('messages').select('*').order('created_at', { ascending: false });
       data.messages = messages || [];
 
+      const { data: leaders } = await supabase.from('leaders').select('*').order('display_order', { ascending: true });
+      data.leaders = leaders || [];
+
       res.render('admin-dashboard', { data, msg: req.query.msg });
     } catch (err) {
       console.error('Dashboard error:', err);
@@ -177,6 +180,66 @@ module.exports = function(upload) {
   router.post('/messages/delete/:id', isAuthenticated, async (req, res) => {
     await supabase.from('messages').delete().eq('id', req.params.id);
     res.redirect('/admin?msg=Message Deleted');
+  });
+
+  // --- LEADERS ---
+  router.post('/leaders', isAuthenticated, upload.single('leader_image'), async (req, res) => {
+    const { name, position, short_bio, full_bio, social_whatsapp, social_facebook, display_order, is_featured } = req.body || {};
+    let image_url = '';
+    if (req.file) {
+      image_url = '/images/' + req.file.filename;
+    }
+    const social_links = JSON.stringify({
+      whatsapp: social_whatsapp || '',
+      facebook: social_facebook || ''
+    });
+    await supabase.from('leaders').insert({
+      name, position, short_bio, full_bio: full_bio || '',
+      image_url, social_links,
+      is_featured: is_featured === 'on',
+      display_order: parseInt(display_order) || 0
+    });
+    res.redirect('/admin?msg=Leader Added');
+  });
+
+  router.post('/leaders/edit/:id', isAuthenticated, upload.single('leader_image'), async (req, res) => {
+    const { name, position, short_bio, full_bio, social_whatsapp, social_facebook, display_order, is_featured } = req.body || {};
+    const social_links = JSON.stringify({
+      whatsapp: social_whatsapp || '',
+      facebook: social_facebook || ''
+    });
+    const updateData = {
+      name, position, short_bio, full_bio: full_bio || '',
+      social_links,
+      is_featured: is_featured === 'on',
+      display_order: parseInt(display_order) || 0,
+      updated_at: new Date().toISOString()
+    };
+    if (req.file) {
+      // Delete old image if it exists locally
+      const { data: rows } = await supabase.from('leaders').select('image_url').eq('id', req.params.id).limit(1);
+      if (rows && rows.length > 0 && rows[0].image_url && rows[0].image_url.startsWith('/images/')) {
+        const oldPath = path.join(__dirname, '../public', rows[0].image_url);
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
+      }
+      updateData.image_url = '/images/' + req.file.filename;
+    }
+    await supabase.from('leaders').update(updateData).eq('id', req.params.id);
+    res.redirect('/admin?msg=Leader Updated');
+  });
+
+  router.post('/leaders/delete/:id', isAuthenticated, async (req, res) => {
+    const { data: rows } = await supabase.from('leaders').select('image_url').eq('id', req.params.id).limit(1);
+    if (rows && rows.length > 0 && rows[0].image_url && rows[0].image_url.startsWith('/images/')) {
+      const filePath = path.join(__dirname, '../public', rows[0].image_url);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+    await supabase.from('leaders').delete().eq('id', req.params.id);
+    res.redirect('/admin?msg=Leader Deleted');
   });
 
   return router;

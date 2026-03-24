@@ -129,6 +129,29 @@ async function initializeDatabase() {
 
   // --- Messages table (no seed data needed) ---
 
+  // --- Leaders table ---
+  try {
+    const { data: existingLeaders } = await supabase.from('leaders').select('id').limit(1);
+    if (!existingLeaders || existingLeaders.length === 0) {
+      await supabase.from('leaders').insert([
+        {
+          name: 'Prophet Samuel Eghan Gorman',
+          position: 'Founder & Senior Pastor',
+          short_bio: 'Under his visionary leadership, ACT Ministry International has grown into a vibrant community of believers committed to experiencing God\'s transformative power.',
+          full_bio: 'Prophet Samuel Eghan Gorman is the founder of Apostolic Core Team Ministry International. Under his visionary leadership, the ministry has grown into a vibrant community of believers committed to experiencing God\'s transformative power. Every service is an opportunity for supernatural encounters, prophetic declarations, and Spirit-led worship.',
+          image_url: '/images/head-pastor.png',
+          social_links: JSON.stringify({ whatsapp: '+233547860070' }),
+          is_featured: true,
+          display_order: 1
+        }
+      ]);
+      console.log('Default leaders seeded.');
+    }
+  } catch (e) {
+    console.log('Note: "leaders" table may need to be created in Supabase.');
+    console.error(e.message);
+  }
+
   console.log('Supabase database initialization complete.');
 }
 

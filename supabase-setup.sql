@@ -60,6 +60,21 @@ CREATE TABLE IF NOT EXISTS messages (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Leaders table (Leadership Board)
+CREATE TABLE IF NOT EXISTS leaders (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name TEXT NOT NULL,
+  position TEXT,
+  short_bio TEXT,
+  full_bio TEXT,
+  image_url TEXT,
+  social_links JSONB DEFAULT '{}',
+  is_featured BOOLEAN DEFAULT FALSE,
+  display_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- =============================================
 -- IMPORTANT: Disable Row Level Security (RLS) 
 -- so the app can read/write without auth tokens.
@@ -71,6 +86,7 @@ ALTER TABLE ministries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE gallery ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sermons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE leaders ENABLE ROW LEVEL SECURITY;
 
 -- Create policies to allow full access via the anon key
 CREATE POLICY "Allow all on users" ON users FOR ALL USING (true) WITH CHECK (true);
@@ -80,3 +96,4 @@ CREATE POLICY "Allow all on ministries" ON ministries FOR ALL USING (true) WITH 
 CREATE POLICY "Allow all on gallery" ON gallery FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all on sermons" ON sermons FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all on messages" ON messages FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on leaders" ON leaders FOR ALL USING (true) WITH CHECK (true);

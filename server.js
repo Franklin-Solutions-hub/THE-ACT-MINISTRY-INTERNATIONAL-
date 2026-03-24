@@ -87,6 +87,30 @@ app.post('/contact', async (req, res) => {
   res.json({ success: true, message: 'Message sent successfully' });
 });
 
+// --- LEADERSHIP PAGE ---
+app.get('/leadership', async (req, res) => {
+  try {
+    const data = {};
+
+    // Fetch settings for navbar/footer
+    const { data: settingsRows } = await supabase.from('settings').select('key, value');
+    data.settings = {};
+    (settingsRows || []).forEach(row => data.settings[row.key] = row.value);
+
+    // Fetch leaders ordered by display_order
+    const { data: leaders, error: leadersError } = await supabase.from('leaders').select('*').order('display_order', { ascending: true });
+    if (leadersError) {
+      console.error('Leaders fetch error:', leadersError.message);
+    }
+    data.leaders = leaders || [];
+
+    res.render('leadership', { data });
+  } catch (err) {
+    console.error('Leadership page error:', err);
+    res.status(500).send('Database Error');
+  }
+});
+
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);

@@ -108,6 +108,7 @@
         <li><a href="#" class="tab-btn" data-target="gallery"><i class='bx bx-image'></i> Media Hub</a></li>
         <li><a href="#" class="tab-btn" data-target="sermons"><i class='bx bx-video'></i> Sermons</a></li>
         <li><a href="#" class="tab-btn" data-target="messages"><i class='bx bx-envelope'></i> Messages</a></li>
+        <li><a href="#" class="tab-btn" data-target="leadership"><i class='bx bx-group'></i> Leadership</a></li>
         <li><a href="/" target="_blank" style="margin-top: 20px; border: 1px solid var(--deep-blue);"><i class='bx bx-link-external'></i> View Site</a></li>
       </ul>
     </aside>
@@ -436,6 +437,149 @@
         </div>
       </section>
 
+      <!-- LEADERSHIP TAB -->
+      <section id="leadership" class="tab-content">
+        <div class="card">
+          <h3>Add New Leader</h3>
+          <form action="/admin/leaders" method="POST" enctype="multipart/form-data">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="name" placeholder="e.g. Prophet Samuel E. Gorman" required>
+              </div>
+              <div class="form-group">
+                <label>Position / Title</label>
+                <input type="text" name="position" placeholder="e.g. Senior Pastor" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Profile Image</label>
+              <div class="drag-drop-zone" id="leaderDropZone" onclick="document.getElementById('leaderFileInput').click()">
+                <i class='bx bx-cloud-upload'></i>
+                <p>Drag & Drop profile image or click to browse</p>
+                <input type="file" name="leader_image" id="leaderFileInput" accept="image/*" style="display: none;">
+              </div>
+              <div id="leaderFilePreview" style="margin-top:10px; font-weight:bold; color:var(--deep-blue);"></div>
+            </div>
+
+            <div class="form-group">
+              <label>Short Bio (2-3 lines, shown on cards)</label>
+              <textarea name="short_bio" rows="2" placeholder="Brief description of the leader..." required></textarea>
+            </div>
+            <div class="form-group">
+              <label>Full Bio (optional, shown on Featured section)</label>
+              <textarea name="full_bio" rows="4" placeholder="Detailed biography..."></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+              <div class="form-group">
+                <label>WhatsApp Number (optional)</label>
+                <input type="text" name="social_whatsapp" placeholder="e.g. +233547860070">
+              </div>
+              <div class="form-group">
+                <label>Facebook Link (optional)</label>
+                <input type="text" name="social_facebook" placeholder="https://facebook.com/...">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+              <div class="form-group">
+                <label>Display Order</label>
+                <input type="number" name="display_order" value="0" min="0" placeholder="Lower = first">
+              </div>
+              <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 10px; margin-top: 28px;">
+                  <input type="checkbox" name="is_featured" style="width: auto; padding: 0;">
+                  <span>Featured Leader (spotlight section)</span>
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-save">Add Leader</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h3>Current Leaders</h3>
+          <% if(data.leaders && data.leaders.length > 0) { %>
+          <table class="data-table">
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Position</th>
+              <th>Status</th>
+              <th>Order</th>
+              <th>Action</th>
+            </tr>
+            <% data.leaders.forEach(leader => { %>
+            <% const socials = typeof leader.social_links === 'string' ? JSON.parse(leader.social_links) : (leader.social_links || {}); %>
+            <tr>
+              <td>
+                <% if(leader.image_url) { %>
+                  <img src="<%= leader.image_url %>" alt="<%= leader.name %>" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
+                <% } else { %>
+                  <div style="width:50px; height:50px; border-radius:50%; background:var(--gray-light); display:flex; align-items:center; justify-content:center;"><i class='bx bx-user'></i></div>
+                <% } %>
+              </td>
+              <td><strong><%= leader.name %></strong></td>
+              <td><%= leader.position %></td>
+              <td>
+                <% if(leader.is_featured) { %>
+                  <span style="background: var(--gold); color: var(--deep-blue); padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">Featured</span>
+                <% } else { %>
+                  <span style="background: var(--gray-light); color: var(--gray-dark); padding: 3px 10px; border-radius: 12px; font-size: 0.75rem;">Normal</span>
+                <% } %>
+              </td>
+              <td><%= leader.display_order %></td>
+              <td>
+                <button class="btn-save" style="padding: 6px 12px; font-size: 0.8rem; margin-right: 5px;" onclick="document.getElementById('edit-leader-<%= leader.id %>').style.display='table-row'">Edit</button>
+                <form action="/admin/leaders/delete/<%= leader.id %>" method="POST" style="display:inline;">
+                  <button type="submit" class="btn-delete" onclick="return confirm('Are you sure you want to delete this leader?')">Delete</button>
+                </form>
+              </td>
+            </tr>
+            <!-- Hidden Edit Row for Leader -->
+            <tr id="edit-leader-<%= leader.id %>" style="display:none; background: #f9f9f9;">
+              <td colspan="6">
+                <form action="/admin/leaders/edit/<%= leader.id %>" method="POST" enctype="multipart/form-data" style="padding: 15px;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" name="name" value="<%= leader.name %>" placeholder="Name" style="padding:8px;" required>
+                    <input type="text" name="position" value="<%= leader.position %>" placeholder="Position" style="padding:8px;" required>
+                  </div>
+                  <div style="margin-bottom: 10px;">
+                    <textarea name="short_bio" rows="2" style="width:100%; padding:8px;" placeholder="Short Bio" required><%= leader.short_bio %></textarea>
+                  </div>
+                  <div style="margin-bottom: 10px;">
+                    <textarea name="full_bio" rows="3" style="width:100%; padding:8px;" placeholder="Full Bio (optional)"><%= leader.full_bio || '' %></textarea>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                    <div>
+                      <label style="font-size:0.8rem; font-weight:600;">New Image (optional)</label>
+                      <input type="file" name="leader_image" accept="image/*" style="padding:5px; font-size:0.85rem;">
+                    </div>
+                    <input type="text" name="social_whatsapp" value="<%= socials.whatsapp || '' %>" placeholder="WhatsApp" style="padding:8px;">
+                    <input type="text" name="social_facebook" value="<%= socials.facebook || '' %>" placeholder="Facebook URL" style="padding:8px;">
+                  </div>
+                  <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="number" name="display_order" value="<%= leader.display_order %>" style="padding:8px; width:80px;" min="0">
+                    <label style="display:flex; align-items:center; gap:5px; font-size:0.85rem;">
+                      <input type="checkbox" name="is_featured" style="width:auto; padding:0;" <%= leader.is_featured ? 'checked' : '' %>> Featured
+                    </label>
+                    <button type="submit" class="btn-save" style="padding: 6px 12px; font-size: 0.8rem;">Save</button>
+                    <button type="button" class="btn-delete" style="padding: 6px 12px; font-size: 0.8rem;" onclick="document.getElementById('edit-leader-<%= leader.id %>').style.display='none'">Cancel</button>
+                  </div>
+                </form>
+              </td>
+            </tr>
+            <% }) %>
+          </table>
+          <% } else { %>
+            <p>No leaders added yet. Add your first leader above!</p>
+          <% } %>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -534,6 +678,38 @@
       sermonFileInput.addEventListener('change', function() {
         if(this.files.length > 0) {
           sermonFilePreview.textContent = 'Selected file: ' + this.files[0].name;
+        }
+      });
+    }
+
+    // Leader Image Drag and Drop Logic
+    const leaderDropZone = document.getElementById('leaderDropZone');
+    const leaderFileInput = document.getElementById('leaderFileInput');
+    const leaderFilePreview = document.getElementById('leaderFilePreview');
+
+    if(leaderDropZone) {
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        leaderDropZone.addEventListener(eventName, function(e) { e.preventDefault(); e.stopPropagation(); }, false);
+      });
+      ['dragenter', 'dragover'].forEach(eventName => {
+        leaderDropZone.addEventListener(eventName, () => leaderDropZone.classList.add('dragover'), false);
+      });
+      ['dragleave', 'drop'].forEach(eventName => {
+        leaderDropZone.addEventListener(eventName, () => leaderDropZone.classList.remove('dragover'), false);
+      });
+
+      leaderDropZone.addEventListener('drop', function(e) {
+        let dt = e.dataTransfer;
+        let files = dt.files;
+        if(files.length > 0) {
+          leaderFileInput.files = files;
+          leaderFilePreview.textContent = 'Selected: ' + files[0].name;
+        }
+      }, false);
+
+      leaderFileInput.addEventListener('change', function() {
+        if(this.files.length > 0) {
+          leaderFilePreview.textContent = 'Selected: ' + this.files[0].name;
         }
       });
     }
