@@ -34,7 +34,7 @@
         <a href="#sermons">Sermons</a>
         <a href="#donate">Give</a>
         <a href="#contact">Contact</a>
-        <a href="#" class="nav-cta" onclick="window.open('<%= data.settings.watch_live_link || \'https://www.youtube.com\' %>', '_blank')">
+        <a href="<%= data.settings.watch_live_link || 'https://www.youtube.com' %>" target="_blank" rel="noopener" class="nav-cta">
           <i class='bx bx-play-circle'></i> Watch Live
         </a>
       </div>
