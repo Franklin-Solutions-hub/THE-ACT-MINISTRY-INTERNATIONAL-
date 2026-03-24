@@ -187,6 +187,29 @@
 
       <!-- EVENTS TAB -->
       <section id="events" class="tab-content">
+
+        <div class="card">
+          <h3>Event Section Flyer / Image</h3>
+          <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">The promotional image displayed next to your Event Cards on the Homepage.</p>
+          
+          <div style="margin-bottom: 20px;">
+            <img src="<%= data.settings.event_flyer_url || '/images/worship-flyer.png' %>" alt="Current Event Flyer" style="width: 100%; max-height: 300px; object-fit: contain; border-radius: 8px; border: 1px solid var(--gray-light); background: #f8f8f8;">
+          </div>
+
+          <form action="/admin/events/flyer" method="POST" enctype="multipart/form-data" style="margin-bottom: 15px;">
+            <div class="drag-drop-zone" onclick="document.getElementById('eventFlyerInput').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--magenta)';" ondragleave="this.style.borderColor='var(--gray)';" ondrop="event.preventDefault(); this.style.borderColor='var(--gray)'; const file = event.dataTransfer.files[0]; if(file) { document.getElementById('eventFlyerInput').files = event.dataTransfer.files; this.querySelector('span').innerHTML = '<span style=\'color:green;font-weight:600;\'>Ready to upload: ' + file.name + '</span>'; }" style="margin-bottom: 15px;">
+              <i class='bx bx-cloud-upload'></i>
+              <span>Drag & Drop a new flyer image here or click to browse</span>
+              <input type="file" name="flyer_image" id="eventFlyerInput" accept="image/*" style="display: none;" onchange="this.previousElementSibling.innerHTML = '<span style=\'color:green;font-weight:600;\'>Ready to upload: ' + this.files[0].name + '</span>'" required>
+            </div>
+            <button type="submit" class="btn-save" style="width: auto;"><i class='bx bx-upload'></i> Upload & Replace Flyer</button>
+          </form>
+
+          <form action="/admin/events/flyer/delete" method="POST" onsubmit="return confirm('Revert to the default flyer image?');">
+            <button type="submit" class="btn-delete" style="width: auto; background: rgba(214, 51, 132, 0.1); color: var(--magenta);"><i class='bx bx-reset'></i> Revert to Default</button>
+          </form>
+        </div>
+
         <div class="card">
           <h3>Add New Event Card</h3>
           <form action="/admin/events" method="POST">

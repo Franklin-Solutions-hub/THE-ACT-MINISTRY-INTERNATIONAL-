@@ -115,6 +115,32 @@ module.exports = function(upload) {
     res.redirect('/admin?msg=Hero Banner Reset to Default');
   });
 
+  // --- EVENT FLYER UPLOAD/DELETE ---
+  router.post('/events/flyer', isAuthenticated, upload.single('flyer_image'), async (req, res) => {
+    if (req.file) {
+      const { data: rows } = await supabase.from('settings').select('value').eq('key', 'event_flyer_url').limit(1);
+      if (rows && rows.length > 0 && rows[0].value && rows[0].value.startsWith('/images/') && rows[0].value !== '/images/worship-flyer.png') {
+        const oldPath = path.join(__dirname, '../public', rows[0].value);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+      const imageUrl = '/images/' + req.file.filename;
+      await supabase.from('settings').upsert({ key: 'event_flyer_url', value: imageUrl }, { onConflict: 'key' });
+      res.redirect('/admin?msg=Event Flyer Updated');
+    } else {
+      res.redirect('/admin?msg=Upload failed');
+    }
+  });
+
+  router.post('/events/flyer/delete', isAuthenticated, async (req, res) => {
+    const { data: rows } = await supabase.from('settings').select('value').eq('key', 'event_flyer_url').limit(1);
+    if (rows && rows.length > 0 && rows[0].value && rows[0].value.startsWith('/images/') && rows[0].value !== '/images/worship-flyer.png') {
+      const filePath = path.join(__dirname, '../public', rows[0].value);
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    }
+    await supabase.from('settings').upsert({ key: 'event_flyer_url', value: '/images/worship-flyer.png' }, { onConflict: 'key' });
+    res.redirect('/admin?msg=Event Flyer Reset to Default');
+  });
+
   // --- EVENTS ---
   router.post('/events', isAuthenticated, async (req, res) => {
     const { title, time, location, icon, description } = req.body || {};

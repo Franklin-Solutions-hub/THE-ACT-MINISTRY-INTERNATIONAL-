@@ -74,7 +74,7 @@
 
       <div class="event-grid">
         <div class="event-image reveal-left">
-          <img src="/images/worship-flyer.png" alt="Service Flyer" loading="lazy">
+          <img src="<%= data.settings.event_flyer_url || '/images/worship-flyer.png' %>" alt="Service Flyer" loading="lazy">
         </div>
         <div class="event-cards reveal-right">
           <% data.events.forEach(event => { %>
