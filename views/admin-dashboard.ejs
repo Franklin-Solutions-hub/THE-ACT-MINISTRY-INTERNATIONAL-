@@ -120,6 +120,29 @@
 
       <!-- SETTINGS TAB -->
       <section id="settings" class="tab-content active">
+        
+        <div class="card">
+          <h3>Global Hero Banner</h3>
+          <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">The background image used at the top of the Homepage, Leadership, and Sermons pages.</p>
+          
+          <div style="margin-bottom: 20px;">
+            <img src="<%= data.settings.hero_banner_url || '/images/worship-flyer.png' %>" alt="Current Hero Banner" style="width: 100%; max-height: 250px; object-fit: cover; border-radius: 8px; border: 1px solid var(--gray-light);">
+          </div>
+
+          <form action="/admin/settings/hero" method="POST" enctype="multipart/form-data" style="margin-bottom: 15px;">
+            <div class="drag-drop-zone" onclick="document.getElementById('heroFileInput').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--magenta)';" ondrop="event.preventDefault(); this.style.borderColor='var(--gray)'; const file = event.dataTransfer.files[0]; if(file) { document.getElementById('heroFileInput').files = event.dataTransfer.files; this.querySelector('span').innerHTML = '<span style=\'color:green;font-weight:600;\'>Ready to upload: ' + file.name + '</span>'; }" style="margin-bottom: 15px;">
+              <i class='bx bx-cloud-upload'></i>
+              <span>Drag & Drop a new image here or click to browse</span>
+              <input type="file" name="hero_image" id="heroFileInput" accept="image/*" style="display: none;" onchange="this.previousElementSibling.innerHTML = '<span style=\'color:green;font-weight:600;\'>Ready to upload: ' + this.files[0].name + '</span>'" required>
+            </div>
+            <button type="submit" class="btn-save" style="width: auto;"><i class='bx bx-upload'></i> Upload & Replace Banner</button>
+          </form>
+
+          <form action="/admin/settings/hero/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete the custom banner and revert to the default placeholder?');">
+            <button type="submit" class="btn-delete" style="width: auto; background: rgba(214, 51, 132, 0.1); color: var(--magenta);"><i class='bx bx-reset'></i> Revert to Default</button>
+          </form>
+        </div>
+
         <div class="card">
           <h3>General Settings & Text</h3>
           <form action="/admin/settings" method="POST">

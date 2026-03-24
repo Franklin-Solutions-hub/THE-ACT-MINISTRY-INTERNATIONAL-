@@ -84,6 +84,37 @@ module.exports = function(upload) {
     res.redirect('/admin?msg=Settings Updated');
   });
 
+  // --- HERO BANNER UPLOAD/DELETE ---
+  router.post('/settings/hero', isAuthenticated, upload.single('hero_image'), async (req, res) => {
+    if (req.file) {
+      // Find old image to delete (if not default)
+      const { data: rows } = await supabase.from('settings').select('value').eq('key', 'hero_banner_url').limit(1);
+      if (rows && rows.length > 0 && rows[0].value && rows[0].value.startsWith('/images/') && rows[0].value !== '/images/worship-flyer.png') {
+        const oldPath = path.join(__dirname, '../public', rows[0].value);
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
+      }
+      const imageUrl = '/images/' + req.file.filename;
+      await supabase.from('settings').upsert({ key: 'hero_banner_url', value: imageUrl }, { onConflict: 'key' });
+      res.redirect('/admin?msg=Hero Banner Updated');
+    } else {
+      res.redirect('/admin?msg=Upload failed');
+    }
+  });
+
+  router.post('/settings/hero/delete', isAuthenticated, async (req, res) => {
+    const { data: rows } = await supabase.from('settings').select('value').eq('key', 'hero_banner_url').limit(1);
+    if (rows && rows.length > 0 && rows[0].value && rows[0].value.startsWith('/images/') && rows[0].value !== '/images/worship-flyer.png') {
+      const filePath = path.join(__dirname, '../public', rows[0].value);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+    await supabase.from('settings').upsert({ key: 'hero_banner_url', value: '/images/worship-flyer.png' }, { onConflict: 'key' });
+    res.redirect('/admin?msg=Hero Banner Reset to Default');
+  });
+
   // --- EVENTS ---
   router.post('/events', isAuthenticated, async (req, res) => {
     const { title, time, location, icon, description } = req.body || {};

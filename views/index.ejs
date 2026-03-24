@@ -45,7 +45,7 @@
 
   <!-- ====== HERO SECTION ====== -->
   <section class="hero" id="home">
-    <div class="hero-bg"><img src="/images/worship-flyer.png" alt="Background" fetchpriority="high"></div>
+    <div class="hero-bg"><img src="<%= data.settings.hero_banner_url || '/images/worship-flyer.png' %>" alt="Background" fetchpriority="high"></div>
     <div class="hero-overlay"></div>
     <div class="hero-particles">
       <% for(let i=0; i<8; i++){ %><div class="hero-particle"></div><% } %>

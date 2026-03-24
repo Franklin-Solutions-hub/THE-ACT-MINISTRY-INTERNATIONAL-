@@ -47,7 +47,8 @@ async function initializeDatabase() {
         { key: 'contact_phone2', value: '+233 54 678 7245' },
         { key: 'contact_phone3', value: '+233 54 621 0288' },
         { key: 'contact_email', value: 'info@actministry.org' },
-        { key: 'paystack_public_key', value: '' }
+        { key: 'paystack_public_key', value: '' },
+        { key: 'hero_banner_url', value: '/images/worship-flyer.png' }
       ];
       await supabase.from('settings').insert(defaultSettings);
       console.log('Default settings seeded.');
