@@ -1,8 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const supabase = require('../database');
-const fs = require('fs');
-const path = require('path');
 
 module.exports = function(upload) {
   const router = express.Router();
@@ -14,6 +12,12 @@ module.exports = function(upload) {
     }
     res.redirect('/admin/login');
   };
+
+  // --- Get Supabase helpers from app.locals ---
+  const getHelpers = (req) => ({
+    uploadToSupabase: req.app.locals.uploadToSupabase,
+    deleteFromSupabase: req.app.locals.deleteFromSupabase
+  });
 
   // --- AUTH ROUTES ---
   router.get('/login', (req, res) => {
@@ -86,57 +90,54 @@ module.exports = function(upload) {
 
   // --- HERO BANNER UPLOAD/DELETE ---
   router.post('/settings/hero', isAuthenticated, upload.single('hero_image'), async (req, res) => {
+    const { uploadToSupabase, deleteFromSupabase } = getHelpers(req);
     if (req.file) {
-      // Find old image to delete (if not default)
       const { data: rows } = await supabase.from('settings').select('value').eq('key', 'hero_banner_url').limit(1);
-      if (rows && rows.length > 0 && rows[0].value && rows[0].value.startsWith('/images/') && rows[0].value !== '/images/worship-flyer.png') {
-        const oldPath = path.join(__dirname, '../public', rows[0].value);
-        if (fs.existsSync(oldPath)) {
-          fs.unlinkSync(oldPath);
-        }
+      if (rows && rows.length > 0) await deleteFromSupabase(rows[0].value);
+
+      const imageUrl = await uploadToSupabase(req.file.buffer, req.file.originalname, req.file.mimetype);
+      if (imageUrl) {
+        await supabase.from('settings').upsert({ key: 'hero_banner_url', value: imageUrl }, { onConflict: 'key' });
+        res.redirect('/admin?msg=Hero Banner Updated');
+      } else {
+        res.redirect('/admin?msg=Upload failed');
       }
-      const imageUrl = '/images/' + req.file.filename;
-      await supabase.from('settings').upsert({ key: 'hero_banner_url', value: imageUrl }, { onConflict: 'key' });
-      res.redirect('/admin?msg=Hero Banner Updated');
     } else {
       res.redirect('/admin?msg=Upload failed');
     }
   });
 
   router.post('/settings/hero/delete', isAuthenticated, async (req, res) => {
+    const { deleteFromSupabase } = getHelpers(req);
     const { data: rows } = await supabase.from('settings').select('value').eq('key', 'hero_banner_url').limit(1);
-    if (rows && rows.length > 0 && rows[0].value && rows[0].value.startsWith('/images/') && rows[0].value !== '/images/worship-flyer.png') {
-      const filePath = path.join(__dirname, '../public', rows[0].value);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-    }
+    if (rows && rows.length > 0) await deleteFromSupabase(rows[0].value);
     await supabase.from('settings').upsert({ key: 'hero_banner_url', value: '/images/worship-flyer.png' }, { onConflict: 'key' });
     res.redirect('/admin?msg=Hero Banner Reset to Default');
   });
 
   // --- EVENT FLYER UPLOAD/DELETE ---
   router.post('/events/flyer', isAuthenticated, upload.single('flyer_image'), async (req, res) => {
+    const { uploadToSupabase, deleteFromSupabase } = getHelpers(req);
     if (req.file) {
       const { data: rows } = await supabase.from('settings').select('value').eq('key', 'event_flyer_url').limit(1);
-      if (rows && rows.length > 0 && rows[0].value && rows[0].value.startsWith('/images/') && rows[0].value !== '/images/worship-flyer.png') {
-        const oldPath = path.join(__dirname, '../public', rows[0].value);
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      if (rows && rows.length > 0) await deleteFromSupabase(rows[0].value);
+
+      const imageUrl = await uploadToSupabase(req.file.buffer, req.file.originalname, req.file.mimetype);
+      if (imageUrl) {
+        await supabase.from('settings').upsert({ key: 'event_flyer_url', value: imageUrl }, { onConflict: 'key' });
+        res.redirect('/admin?msg=Event Flyer Updated');
+      } else {
+        res.redirect('/admin?msg=Upload failed');
       }
-      const imageUrl = '/images/' + req.file.filename;
-      await supabase.from('settings').upsert({ key: 'event_flyer_url', value: imageUrl }, { onConflict: 'key' });
-      res.redirect('/admin?msg=Event Flyer Updated');
     } else {
       res.redirect('/admin?msg=Upload failed');
     }
   });
 
   router.post('/events/flyer/delete', isAuthenticated, async (req, res) => {
+    const { deleteFromSupabase } = getHelpers(req);
     const { data: rows } = await supabase.from('settings').select('value').eq('key', 'event_flyer_url').limit(1);
-    if (rows && rows.length > 0 && rows[0].value && rows[0].value.startsWith('/images/') && rows[0].value !== '/images/worship-flyer.png') {
-      const filePath = path.join(__dirname, '../public', rows[0].value);
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-    }
+    if (rows && rows.length > 0) await deleteFromSupabase(rows[0].value);
     await supabase.from('settings').upsert({ key: 'event_flyer_url', value: '/images/worship-flyer.png' }, { onConflict: 'key' });
     res.redirect('/admin?msg=Event Flyer Reset to Default');
   });
@@ -177,6 +178,7 @@ module.exports = function(upload) {
     res.redirect('/admin?msg=Ministry Deleted');
   });
 
+  // --- SERMONS ---
   const sermonUploadFields = upload.fields([
     { name: 'thumbnail', maxCount: 1 },
     { name: 'sermon_video', maxCount: 1 },
@@ -184,15 +186,28 @@ module.exports = function(upload) {
   ]);
 
   router.post('/sermons', isAuthenticated, sermonUploadFields, async (req, res) => {
+    const { uploadToSupabase } = getHelpers(req);
     const { title, description, preacher, category, scripture, date_preached, is_featured } = req.body || {};
     let video_url = (req.body && req.body.video_url) ? req.body.video_url : '';
     let thumbnail_url = '';
     let audio_url = '';
 
     if (req.files) {
-      if (req.files.sermon_video) video_url = '/images/' + req.files.sermon_video[0].filename;
-      if (req.files.thumbnail) thumbnail_url = '/images/' + req.files.thumbnail[0].filename;
-      if (req.files.sermon_audio) audio_url = '/images/' + req.files.sermon_audio[0].filename;
+      if (req.files.sermon_video) {
+        const f = req.files.sermon_video[0];
+        const url = await uploadToSupabase(f.buffer, f.originalname, f.mimetype);
+        if (url) video_url = url;
+      }
+      if (req.files.thumbnail) {
+        const f = req.files.thumbnail[0];
+        const url = await uploadToSupabase(f.buffer, f.originalname, f.mimetype);
+        if (url) thumbnail_url = url;
+      }
+      if (req.files.sermon_audio) {
+        const f = req.files.sermon_audio[0];
+        const url = await uploadToSupabase(f.buffer, f.originalname, f.mimetype);
+        if (url) audio_url = url;
+      }
     }
 
     const sermonDate = date_preached || new Date().toISOString().split('T')[0];
@@ -210,6 +225,7 @@ module.exports = function(upload) {
   });
 
   router.post('/sermons/edit/:id', isAuthenticated, sermonUploadFields, async (req, res) => {
+    const { uploadToSupabase } = getHelpers(req);
     const { title, description, video_url, preacher, category, scripture, date_preached, is_featured } = req.body || {};
     const updateData = { 
       title, description, preacher, category, scripture, 
@@ -218,12 +234,23 @@ module.exports = function(upload) {
     if (date_preached) updateData.date_preached = date_preached;
 
     if (req.files) {
-      if (req.files.sermon_video) updateData.video_url = '/images/' + req.files.sermon_video[0].filename;
-      if (req.files.thumbnail) updateData.thumbnail_url = '/images/' + req.files.thumbnail[0].filename;
-      if (req.files.sermon_audio) updateData.audio_url = '/images/' + req.files.sermon_audio[0].filename;
+      if (req.files.sermon_video) {
+        const f = req.files.sermon_video[0];
+        const url = await uploadToSupabase(f.buffer, f.originalname, f.mimetype);
+        if (url) updateData.video_url = url;
+      }
+      if (req.files.thumbnail) {
+        const f = req.files.thumbnail[0];
+        const url = await uploadToSupabase(f.buffer, f.originalname, f.mimetype);
+        if (url) updateData.thumbnail_url = url;
+      }
+      if (req.files.sermon_audio) {
+        const f = req.files.sermon_audio[0];
+        const url = await uploadToSupabase(f.buffer, f.originalname, f.mimetype);
+        if (url) updateData.audio_url = url;
+      }
     } 
     
-    // Fallback for YouTube links directly submitted instead of file
     if (!req.files || !req.files.sermon_video) {
         if (video_url !== undefined) updateData.video_url = video_url;
     }
@@ -233,18 +260,13 @@ module.exports = function(upload) {
   });
 
   router.post('/sermons/delete/:id', isAuthenticated, async (req, res) => {
-    // Check local files to delete
+    const { deleteFromSupabase } = getHelpers(req);
     const { data: rows } = await supabase.from('sermons').select('video_url, thumbnail_url, audio_url').eq('id', req.params.id).limit(1);
     if (rows && rows.length > 0) {
       const urls = [rows[0].video_url, rows[0].thumbnail_url, rows[0].audio_url];
-      urls.forEach(url => {
-        if (url && url.startsWith('/images/')) {
-          const filePath = path.join(__dirname, '../public', url);
-          if (fs.existsSync(filePath)) {
-            try { fs.unlinkSync(filePath); } catch (e) { console.error('Delete error:', e); }
-          }
-        }
-      });
+      for (const url of urls) {
+        await deleteFromSupabase(url);
+      }
     }
     await supabase.from('sermons').delete().eq('id', req.params.id);
     res.redirect('/admin?msg=Sermon Deleted');
@@ -252,42 +274,39 @@ module.exports = function(upload) {
 
   // --- GALLERY (IMAGE UPLOADS) ---
   router.post('/gallery', isAuthenticated, upload.single('image'), async (req, res) => {
+    const { uploadToSupabase } = getHelpers(req);
     const caption = req.body.caption || '';
     if (req.file) {
-      const imageUrl = '/images/' + req.file.filename;
-      await supabase.from('gallery').insert({ image_url: imageUrl, caption });
-      res.redirect('/admin?msg=Image Uploaded');
+      const imageUrl = await uploadToSupabase(req.file.buffer, req.file.originalname, req.file.mimetype);
+      if (imageUrl) {
+        await supabase.from('gallery').insert({ image_url: imageUrl, caption });
+        res.redirect('/admin?msg=Image Uploaded');
+      } else {
+        res.redirect('/admin?msg=Upload failed');
+      }
     } else {
       res.redirect('/admin?msg=Upload failed');
     }
   });
 
   router.post('/gallery/edit/:id', isAuthenticated, upload.single('image'), async (req, res) => {
+    const { uploadToSupabase, deleteFromSupabase } = getHelpers(req);
     const caption = req.body.caption || '';
     const updateData = { caption };
     if (req.file) {
-      // Find old image to delete
       const { data: rows } = await supabase.from('gallery').select('image_url').eq('id', req.params.id).limit(1);
-      if (rows && rows.length > 0 && rows[0].image_url && rows[0].image_url.startsWith('/images/')) {
-        const oldPath = path.join(__dirname, '../public', rows[0].image_url);
-        if (fs.existsSync(oldPath)) {
-          fs.unlinkSync(oldPath);
-        }
-      }
-      updateData.image_url = '/images/' + req.file.filename;
+      if (rows && rows.length > 0) await deleteFromSupabase(rows[0].image_url);
+      const imageUrl = await uploadToSupabase(req.file.buffer, req.file.originalname, req.file.mimetype);
+      if (imageUrl) updateData.image_url = imageUrl;
     }
     await supabase.from('gallery').update(updateData).eq('id', req.params.id);
     res.redirect('/admin?msg=Media Updated');
   });
 
   router.post('/gallery/delete/:id', isAuthenticated, async (req, res) => {
+    const { deleteFromSupabase } = getHelpers(req);
     const { data: rows } = await supabase.from('gallery').select('image_url').eq('id', req.params.id).limit(1);
-    if (rows && rows.length > 0 && rows[0].image_url) {
-      const filePath = path.join(__dirname, '../public', rows[0].image_url);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-    }
+    if (rows && rows.length > 0) await deleteFromSupabase(rows[0].image_url);
     await supabase.from('gallery').delete().eq('id', req.params.id);
     res.redirect('/admin?msg=Image Deleted');
   });
@@ -300,10 +319,12 @@ module.exports = function(upload) {
 
   // --- LEADERS ---
   router.post('/leaders', isAuthenticated, upload.single('leader_image'), async (req, res) => {
+    const { uploadToSupabase } = getHelpers(req);
     const { name, position, short_bio, full_bio, social_whatsapp, social_facebook, display_order, is_featured } = req.body || {};
     let image_url = '';
     if (req.file) {
-      image_url = '/images/' + req.file.filename;
+      const url = await uploadToSupabase(req.file.buffer, req.file.originalname, req.file.mimetype);
+      if (url) image_url = url;
     }
     const social_links = JSON.stringify({
       whatsapp: social_whatsapp || '',
@@ -319,6 +340,7 @@ module.exports = function(upload) {
   });
 
   router.post('/leaders/edit/:id', isAuthenticated, upload.single('leader_image'), async (req, res) => {
+    const { uploadToSupabase, deleteFromSupabase } = getHelpers(req);
     const { name, position, short_bio, full_bio, social_whatsapp, social_facebook, display_order, is_featured } = req.body || {};
     const social_links = JSON.stringify({
       whatsapp: social_whatsapp || '',
@@ -332,28 +354,19 @@ module.exports = function(upload) {
       updated_at: new Date().toISOString()
     };
     if (req.file) {
-      // Delete old image if it exists locally
       const { data: rows } = await supabase.from('leaders').select('image_url').eq('id', req.params.id).limit(1);
-      if (rows && rows.length > 0 && rows[0].image_url && rows[0].image_url.startsWith('/images/')) {
-        const oldPath = path.join(__dirname, '../public', rows[0].image_url);
-        if (fs.existsSync(oldPath)) {
-          fs.unlinkSync(oldPath);
-        }
-      }
-      updateData.image_url = '/images/' + req.file.filename;
+      if (rows && rows.length > 0) await deleteFromSupabase(rows[0].image_url);
+      const url = await uploadToSupabase(req.file.buffer, req.file.originalname, req.file.mimetype);
+      if (url) updateData.image_url = url;
     }
     await supabase.from('leaders').update(updateData).eq('id', req.params.id);
     res.redirect('/admin?msg=Leader Updated');
   });
 
   router.post('/leaders/delete/:id', isAuthenticated, async (req, res) => {
+    const { deleteFromSupabase } = getHelpers(req);
     const { data: rows } = await supabase.from('leaders').select('image_url').eq('id', req.params.id).limit(1);
-    if (rows && rows.length > 0 && rows[0].image_url && rows[0].image_url.startsWith('/images/')) {
-      const filePath = path.join(__dirname, '../public', rows[0].image_url);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-    }
+    if (rows && rows.length > 0) await deleteFromSupabase(rows[0].image_url);
     await supabase.from('leaders').delete().eq('id', req.params.id);
     res.redirect('/admin?msg=Leader Deleted');
   });
