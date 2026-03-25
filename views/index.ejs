@@ -182,20 +182,22 @@
           <div class="donation-icon"><i class='bx bx-heart'></i></div>
           <h2>Support The Ministry</h2>
           <p>Your generous contributions help us spread the Gospel and support our community initiatives.</p>
-          <div class="donation-amounts" style="margin-bottom: 20px;">
-            <button class="donation-amount active" data-amount="50">GHS 50</button>
-            <button class="donation-amount" data-amount="100">GHS 100</button>
-            <button class="donation-amount" data-amount="200">GHS 200</button>
-            <button class="donation-amount" data-amount="500">GHS 500</button>
-            <button class="donation-amount" data-amount="custom">Custom</button>
-          </div>
-          <div class="form-group custom-amount-container" style="display:none; max-width:300px; margin: 0 auto 20px;">
-            <input type="number" id="customDonationAmount" placeholder="Enter custom amount (GHS)" min="1" style="width:100%; padding: 12px; border: 1px solid var(--gray-light); border-radius: 5px;">
-          </div>
-          <div class="form-group" style="max-width:300px; margin: 0 auto 20px;">
-            <input type="email" id="donationEmail" placeholder="Enter your email address" required style="width:100%; padding: 12px; border: 1px solid var(--gray-light); border-radius: 5px;">
-          </div>
-          <button class="btn btn-primary" onclick="payWithPaystack()" style="width: 100%; max-width: 300px;"><i class='bx bx-donate-heart'></i> Give Now</button>
+          <form id="donationForm" onsubmit="payWithPaystack(event)" style="width: 100%;">
+            <div class="donation-amounts" style="margin-bottom: 20px;">
+              <button type="button" class="donation-amount active" data-amount="50">GHS 50</button>
+              <button type="button" class="donation-amount" data-amount="100">GHS 100</button>
+              <button type="button" class="donation-amount" data-amount="200">GHS 200</button>
+              <button type="button" class="donation-amount" data-amount="500">GHS 500</button>
+              <button type="button" class="donation-amount" data-amount="custom">Custom</button>
+            </div>
+            <div class="form-group custom-amount-container" style="display:none; max-width:300px; margin: 0 auto 20px;">
+              <input type="number" id="customDonationAmount" placeholder="Enter custom amount (GHS)" min="1" step="any" style="width:100%; padding: 12px; border: 1px solid var(--gray-light); border-radius: 5px;">
+            </div>
+            <div class="form-group" style="max-width:300px; margin: 0 auto 20px;">
+              <input type="email" id="donationEmail" placeholder="Enter your email address" required style="width:100%; padding: 12px; border: 1px solid var(--gray-light); border-radius: 5px;">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; max-width: 300px; justify-content: center;"><i class='bx bx-donate-heart'></i> Give Now</button>
+          </form>
         </div>
       </div>
     </div>
@@ -226,13 +228,15 @@
       });
     });
 
-    function payWithPaystack() {
+    function payWithPaystack(e) {
+      if(e) e.preventDefault();
+      
       if(!pk) {
         alert('Payment system is not configured yet. Please try again later.');
         return;
       }
       
-      const email = document.getElementById('donationEmail').value;
+      const email = document.getElementById('donationEmail').value.trim();
       if(!email) {
         alert('Please enter your email address to proceed.');
         return;
